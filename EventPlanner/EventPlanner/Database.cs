@@ -19,52 +19,106 @@ namespace EventPlanner
             con = new SqlConnection(connectionString);
         }
 
-        public void DBConn()
-        {
-            //var con = new SqlConnection(connectionString);
-            if (con.State != System.Data.ConnectionState.Open)
-                con.Open();
-
-            var cmd = con.CreateCommand();
-
-
-            cmd.CommandText = "SELECT * FROM test;";
-
-            var reader = cmd.ExecuteReader();
-
-            while (reader.Read())
-            {
-                var id = reader.GetInt32(0);
-                Console.WriteLine(id);
-            }
-            //cmd.CommandText = "select ...";
-
-            //var reader = cmd.ExecuteReader();
-
-            //while (reader.Read())
-            //{
-            //    var name = reader.GetString(0);
-            //}
-        }
-
-        public void GetUserById(int Id)
+        public User GetUserById(int Id)
         {
             if (con.State != System.Data.ConnectionState.Open)
                 con.Open();
 
-            var cmd = con.CreateCommand();
-
-            cmd.CommandText = "SELECT * FROM [user] WHERE id = " + Id;
-            var reader = cmd.ExecuteReader();
-
-            if (reader.Read())
+            using (SqlCommand cmd = con.CreateCommand())
             {
-                var id = reader.GetInt32(0);
-                var name = reader.GetString(1);
-                Console.WriteLine($"{id}, {name}");
+                cmd.CommandText = "SELECT * FROM [user] WHERE id = @id";
+                cmd.Parameters.AddWithValue("id", Id);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        User user = new User();
+
+                        user.Id = (int)reader["Id"];
+                        user.Email = (string)reader["Email"];
+                        user.Password = (string)reader["Password"];
+
+                        return user;
+                    }
+                }
             }
+
+            return null;
         }
 
-        public void GetEvent(int Id) { }
+        public Event GetEvent(int Id)
+        {
+            if (con.State != System.Data.ConnectionState.Open)
+                con.Open();
+
+            Event ev = null;
+            int creatorId = 0;
+
+            using (SqlCommand cmd = con.CreateCommand())
+            {
+                cmd.CommandText = "SELECT * FROM [Event] WHERE [Id] = @id";
+                cmd.Parameters.AddWithValue("id", Id);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        ev = new Event();
+
+                        ev.Id = (int)reader["Id"];
+                        ev.Name = (string)reader["Name"];
+                        ev.Description = (string)reader["Description"];
+                        ev.MaxParticipant = (int)reader["MaxParticipant"];
+                        ev.Date = (DateTime)reader["Date"];
+                        ev.Location = (string)reader["Location"];
+
+                        creatorId = (int)reader["CreatorId"];
+                    }
+                }
+            }
+
+            if (ev != null)
+            {
+                ev.Creator = GetUserById(creatorId);
+
+                // get event participants
+            }
+
+            return ev;
+        }
+
+        public List<User> GetEventParticipants(int eventId)
+        {
+            List<int> userIds = new List<int>();
+
+            using (SqlCommand cmd = con.CreateCommand()) // Short variable for the sql command
+            {
+                cmd.CommandText = "SELECT * FROM [Participant] WHERE [EventId] = @eventId"; // Ask an sql question to the database
+                cmd.Parameters.AddWithValue("eventId", eventId);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())  // Run the query save the result in reader variable
+                {
+                    while (reader.Read())
+                    {
+                        int userId = (int)reader["UserId"];
+                        userIds.Add(userId);
+                    }
+                }
+            }
+
+            List<User> users = new List<User>();
+
+            foreach (int id in userIds)
+            {
+                User user = GetUserById(id);
+                if (user != null)
+                {
+                    users.Add(user);
+                }
+            }
+
+            return users;
+        }
     }
 }

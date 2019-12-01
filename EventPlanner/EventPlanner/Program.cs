@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace EventPlanner
 {
@@ -6,8 +8,8 @@ namespace EventPlanner
     {
         static void Main(string[] args)
         {
-            var DB = new Database();
-            DB.GetUserById(0);
+            EventManager eventManager = new EventManager();
+            eventManager.Start();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace EventPlanner
 {
@@ -75,6 +76,33 @@ namespace EventPlanner
         
         public void CreateEvent()
         {
+
+            while (true)
+            {
+                Logger.Write("Event name: ");
+                string name = Logger.ReadLine();
+
+                Logger.Write("Description: ");
+                string description = Logger.ReadLine();
+
+                Logger.Write("Maximum participants: ");
+                string maxParticipanInput = Logger.ReadLine();
+            
+                Logger.Write("Date: ");
+                string date = Logger.ReadLine();
+
+                Logger.Write("Location: ");
+                string location = Logger.ReadLine();
+
+                // Validation here
+                if (!Validation.IsValidEmail(name))
+                {
+                    continue;
+                }
+
+                break;
+
+            }
         }
 
         public void CreateDestination()

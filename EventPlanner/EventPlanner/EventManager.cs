@@ -46,9 +46,6 @@ namespace EventPlanner
                         Login(database);
                         break;
                     case "4":
-                        CreateDestination();
-                        break;
-                    case "5":
                         ShowEvents();
                         break;
                     case "0":
@@ -63,15 +60,15 @@ namespace EventPlanner
 
         public void CreateUser()
         {
-            Logger.Write("Enter username: ");
-            string username = Logger.ReadLine();
+            Logger.Write("Enter email: ");
+            string email = Logger.ReadLine();
 
             Logger.Write("Enter password: ");
             string password = Logger.ReadPassword();
 
             string passwordHash = Hasher.Hash(password);
 
-            Console.WriteLine($"You created user {username} with password: {passwordHash}");
+            Console.WriteLine($"You created user {email} with password: {passwordHash}");
         }
         
         public void CreateEvent()
@@ -140,9 +137,6 @@ namespace EventPlanner
             }
         }
 
-        public void CreateDestination()
-        {
-        }
 
         public void ShowEvents()
         {
@@ -150,6 +144,37 @@ namespace EventPlanner
 
         public void Login(Database database) 
         {
+            while (true)
+            {
+                Logger.Write("Enter email: ");
+                string email = Logger.ReadLine();
+
+                Logger.Write("Enter password: ");
+                string password = Logger.ReadPassword();
+
+                if (!Validation.IsValidEmail(email))
+                {
+                    continue;
+                }
+
+                if (password == "")
+                {
+                    continue;
+                }
+
+                string passwordHash = Hasher.Hash(password);
+                User user = database.Login(email, passwordHash);
+                if (user == null)
+                {
+                    continue;
+                }
+                LoggedInUser = user;
+                Console.WriteLine($"Welcome to the matrix {user.Email}");
+                break;
+                
+
+            }
+
         }
 
         public void ShowLoginError() 

@@ -17,12 +17,16 @@ namespace EventPlanner
             connectionString = File.ReadAllText("db.txt");
 
             con = new SqlConnection(connectionString);
+            con.Open();
+        }
+
+        public void Close()
+        {
+            con.Close();
         }
 
         public User GetUserById(int Id)
         {
-            if (con.State != System.Data.ConnectionState.Open)
-                con.Open();
 
             using (SqlCommand cmd = con.CreateCommand())
             {
@@ -37,7 +41,33 @@ namespace EventPlanner
 
                         user.Id = (int)reader["Id"];
                         user.Email = (string)reader["Email"];
-                        user.Password = (string)reader["Password"];
+                        user.PasswordHash = (string)reader["Password"];
+
+                        return user;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public User Login (string email, string passwordHash)
+        {
+
+            using (SqlCommand cmd = con.CreateCommand())
+            {
+                cmd.CommandText = "SELECT * FROM [user] WHERE Email = @email AND PasswordHash = @passwordHash";
+                cmd.Parameters.AddWithValue("email", email);
+                cmd.Parameters.AddWithValue("passwordHash", passwordHash);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        User user = new User();
+
+                        user.Email = (string)reader["Email"];
+                        user.PasswordHash = (string)reader["PasswordHash"];
 
                         return user;
                     }
@@ -49,9 +79,7 @@ namespace EventPlanner
 
         public void AddEvent(int creatorId, string name, string description, int maxParticipant, DateTime date, string location)
         {
-            if (con.State != System.Data.ConnectionState.Open)
-                con.Open();
-
+            
             using (SqlCommand cmd = con.CreateCommand())
             {
                 cmd.CommandText = "INSERT INTO [Event] " +
@@ -69,8 +97,6 @@ namespace EventPlanner
         }
         public Event GetEvent(int Id)
         {
-            if (con.State != System.Data.ConnectionState.Open)
-                con.Open();
 
             Event ev = null;
             int creatorId = 0;

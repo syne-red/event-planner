@@ -95,11 +95,46 @@ namespace EventPlanner
                 string location = Logger.ReadLine();
 
                 // Validation here
-                if (!Validation.IsValidEmail(name))
+                if (!Validation.IsValidEventName(name))
                 {
                     continue;
                 }
 
+                if (!Validation.IsValidDescription(description))
+                {
+                    continue;
+                }
+
+                int maxParticipants;
+                if (!int.TryParse(maxParticipanInput, out maxParticipants))
+                {
+                    continue;
+                }
+                if (!Validation.IsValidMaxParticipants(maxParticipants))
+                {
+                    continue;
+                }
+
+                DateTime eventDate;
+
+                if(!DateTime.TryParse(date, out eventDate))
+                {
+                    continue;
+                }
+
+                if (!Validation.IsValidEventDate(eventDate))
+                {
+                    continue;
+                }
+
+                if (!Validation.IsValidLocation(location))
+                {
+                    continue;
+                }
+
+                Database database = new Database();
+                database.AddEvent(1, name, description, maxParticipants, eventDate, location);
+                Logger.WriteLine("Event added to database!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 break;
 
             }

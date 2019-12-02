@@ -47,6 +47,26 @@ namespace EventPlanner
             return null;
         }
 
+        public void AddEvent(int creatorId, string name, string description, int maxParticipant, DateTime date, string location)
+        {
+            if (con.State != System.Data.ConnectionState.Open)
+                con.Open();
+
+            using (SqlCommand cmd = con.CreateCommand())
+            {
+                cmd.CommandText = "INSERT INTO [Event] " +
+                    "([CreatorId], [Name], [Description], [MaxParticipant], [Date], [Location]) " + 
+                    "VALUES (@creatorId, @name, @description, @maxParticipant, @date, @location)";
+                cmd.Parameters.AddWithValue("creatorId", creatorId);
+                cmd.Parameters.AddWithValue("name", name);
+                cmd.Parameters.AddWithValue("description", description);
+                cmd.Parameters.AddWithValue("maxParticipant", maxParticipant);
+                cmd.Parameters.AddWithValue("date", date);
+                cmd.Parameters.AddWithValue("location", location);
+
+                cmd.ExecuteNonQuery();
+            }
+        }
         public Event GetEvent(int Id)
         {
             if (con.State != System.Data.ConnectionState.Open)

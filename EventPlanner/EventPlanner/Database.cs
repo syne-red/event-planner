@@ -64,11 +64,11 @@ namespace EventPlanner
                     }
                 }
             }
+
             if(user != null)
             {
                 user.Roles = GetUserRoles(user.Id);
             }
-            
 
             return user;
         }
@@ -90,12 +90,10 @@ namespace EventPlanner
                         user.Id = (int)reader["Id"];
                         user.Email = (string)reader["Email"];
                         user.PasswordHash = (string)reader["PasswordHash"];
-                        
-
-                        
                     }
                 }
             }
+
             if (user != null)
             {
                 user.Roles = GetUserRoles(user.Id);
@@ -117,14 +115,11 @@ namespace EventPlanner
                 {
                     if (reader.Read())
                     {
-
                         roles.Add((string)reader["Role"]);
-
-                        
                     }
                 }
-
             }
+
             return roles;
         }
 
@@ -143,17 +138,13 @@ namespace EventPlanner
                     if (reader.Read())
                     {
                         user = new User();
-
-
                         user.Id = (int)reader["Id"];
                         user.Email = (string)reader["Email"];
                         user.PasswordHash = (string)reader["PasswordHash"];
-                        
-
-                        
                     }
                 }
             }
+
             if (user != null)
             {
                 user.Roles = GetUserRoles(user.Id);
@@ -164,7 +155,6 @@ namespace EventPlanner
 
         public void AddEvent(int creatorId, string name, string description, int maxParticipant, DateTime date, string location)
         {
-            
             using (SqlCommand cmd = con.CreateCommand())
             {
                 cmd.CommandText = "INSERT INTO [Event] " +
@@ -180,6 +170,7 @@ namespace EventPlanner
                 cmd.ExecuteNonQuery();
             }
         }
+
         public Event GetEvent(int Id)
         {
             Event ev = null;
@@ -204,20 +195,20 @@ namespace EventPlanner
                     }
                 }
             }
+
             if (ev != null)
             {
                 ev.Participant.AddRange(GetEventParticipants(ev.Id));
                 ev.ChatMessages.AddRange(GetEventChatMessages(ev.Id));
             }
 
-
-            
             return ev;
         }
 
         public List<Event> GetAllEvents()
         {
             List<Event> events = new List<Event>();
+
             using (SqlCommand cmd = con.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM [Event]";
@@ -226,7 +217,6 @@ namespace EventPlanner
                 {
                     while (reader.Read())
                     {
-                        
                         Event ev = new Event();
 
                         ev.Id = (int)reader["Id"];
@@ -236,19 +226,21 @@ namespace EventPlanner
                         ev.Date = (DateTime)reader["Date"];
                         ev.Location = (string)reader["Location"];
 
-
                         events.Add(ev);
                     }
                 }
             }
+
             foreach (Event ev in events)
             {
                 ev.Participant.AddRange(GetEventParticipants(ev.Id));
             }
+            
             foreach (Event ev in events)
             {
                 ev.ChatMessages.AddRange(GetEventChatMessages(ev.Id));
             }
+            
             return events;
         }
 

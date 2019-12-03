@@ -7,8 +7,8 @@ namespace EventPlanner
     class ChatMessage
     {
         public int Id;
-        public User User;
-        public Event Event;
+        public int UserId;
+        public int EventId;
         public DateTime Date;
         public string Message;
     }

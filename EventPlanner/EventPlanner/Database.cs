@@ -25,9 +25,26 @@ namespace EventPlanner
             con.Close();
         }
 
+        public User AddUser(string email, string passwordHash)
+        {
+            using (SqlCommand cmd = con.CreateCommand())
+            {
+                cmd.CommandText = "INSERT INTO [User] " +
+                    "([Email], [PasswordHash]) " +
+                    "VALUES (@email, @passwordHash)";
+                cmd.Parameters.AddWithValue("email", email);
+                cmd.Parameters.AddWithValue("passwordHash", passwordHash);
+
+                cmd.ExecuteNonQuery();
+            }
+
+            return GetUserByEmail(email);
+        }
+
+
         public User GetUserById(int Id)
         {
-
+            User user = null;
             using (SqlCommand cmd = con.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM [user] WHERE id = @id";
@@ -37,44 +54,112 @@ namespace EventPlanner
                 {
                     if (reader.Read())
                     {
-                        User user = new User();
+                        user = new User();
 
                         user.Id = (int)reader["Id"];
                         user.Email = (string)reader["Email"];
-                        user.PasswordHash = (string)reader["Password"];
-
-                        return user;
+                        user.PasswordHash = (string)reader["PasswordHash"];
+                        
+                        
                     }
                 }
             }
+            if(user != null)
+            {
+                user.Roles = GetUserRoles(user.Id);
+            }
+            
 
-            return null;
+            return user;
+        }
+
+        public User GetUserByEmail(string email)
+        {
+            User user = null;
+            using (SqlCommand cmd = con.CreateCommand())
+            {
+                cmd.CommandText = "SELECT * FROM [user] WHERE email = @email";
+                cmd.Parameters.AddWithValue("email", email);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        user = new User();
+
+                        user.Id = (int)reader["Id"];
+                        user.Email = (string)reader["Email"];
+                        user.PasswordHash = (string)reader["PasswordHash"];
+                        
+
+                        
+                    }
+                }
+            }
+            if (user != null)
+            {
+                user.Roles = GetUserRoles(user.Id);
+            }
+
+            return user;
+        }
+
+        public List<string> GetUserRoles (int userId)
+        {
+            List<string> roles = new List<string>();
+            using (SqlCommand cmd = con.CreateCommand())
+            {
+                cmd.CommandText = "SELECT * FROM[UserRole] JOIN[Role] ON " +
+                    "[Role].Id = [UserRole].RoleId WHERE [UserRole].UserId = @id";
+                cmd.Parameters.AddWithValue("id", userId);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+
+                        roles.Add((string)reader["Role"]);
+
+                        
+                    }
+                }
+
+            }
+            return roles;
         }
 
         public User Login (string email, string passwordHash)
         {
+            User user = null;
 
             using (SqlCommand cmd = con.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM [user] WHERE Email = @email AND PasswordHash = @passwordHash";
                 cmd.Parameters.AddWithValue("email", email);
                 cmd.Parameters.AddWithValue("passwordHash", passwordHash);
-
+                
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
                     {
-                        User user = new User();
+                        user = new User();
 
+
+                        user.Id = (int)reader["Id"];
                         user.Email = (string)reader["Email"];
                         user.PasswordHash = (string)reader["PasswordHash"];
+                        
 
-                        return user;
+                        
                     }
                 }
             }
+            if (user != null)
+            {
+                user.Roles = GetUserRoles(user.Id);
+            }
 
-            return null;
+            return user;
         }
 
         public void AddEvent(int creatorId, string name, string description, int maxParticipant, DateTime date, string location)
@@ -97,9 +182,7 @@ namespace EventPlanner
         }
         public Event GetEvent(int Id)
         {
-
             Event ev = null;
-            int creatorId = 0;
 
             using (SqlCommand cmd = con.CreateCommand())
             {
@@ -118,20 +201,55 @@ namespace EventPlanner
                         ev.MaxParticipant = (int)reader["MaxParticipant"];
                         ev.Date = (DateTime)reader["Date"];
                         ev.Location = (string)reader["Location"];
-
-                        creatorId = (int)reader["CreatorId"];
                     }
                 }
             }
-
             if (ev != null)
             {
-                ev.Creator = GetUserById(creatorId);
-
-                // get event participants
+                ev.Participant.AddRange(GetEventParticipants(ev.Id));
+                ev.ChatMessages.AddRange(GetEventChatMessages(ev.Id));
             }
 
+
+            
             return ev;
+        }
+
+        public List<Event> GetAllEvents()
+        {
+            List<Event> events = new List<Event>();
+            using (SqlCommand cmd = con.CreateCommand())
+            {
+                cmd.CommandText = "SELECT * FROM [Event]";
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        
+                        Event ev = new Event();
+
+                        ev.Id = (int)reader["Id"];
+                        ev.Name = (string)reader["Name"];
+                        ev.Description = (string)reader["Description"];
+                        ev.MaxParticipant = (int)reader["MaxParticipant"];
+                        ev.Date = (DateTime)reader["Date"];
+                        ev.Location = (string)reader["Location"];
+
+
+                        events.Add(ev);
+                    }
+                }
+            }
+            foreach (Event ev in events)
+            {
+                ev.Participant.AddRange(GetEventParticipants(ev.Id));
+            }
+            foreach (Event ev in events)
+            {
+                ev.ChatMessages.AddRange(GetEventChatMessages(ev.Id));
+            }
+            return events;
         }
 
         public List<User> GetEventParticipants(int eventId)
@@ -165,6 +283,34 @@ namespace EventPlanner
             }
 
             return users;
+        }
+
+        public List<ChatMessage> GetEventChatMessages(int eventId)
+        {
+            List<ChatMessage> chatMessages = new List<ChatMessage>();
+
+            using (SqlCommand cmd = con.CreateCommand()) // Short variable for the sql command
+            {
+                cmd.CommandText = "SELECT * FROM [ChatMessage] WHERE[EventId] = @id"; // Ask an sql question to the database
+                cmd.Parameters.AddWithValue("id", eventId);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())  // Run the query save the result in reader variable
+                {
+                    while (reader.Read())
+                    {
+                        ChatMessage chatMessage = new ChatMessage();
+                        chatMessage.Id = (int)reader["Id"];
+                        chatMessage.UserId = (int)reader["UserId"];
+                        chatMessage.Date = (DateTime)reader["Date"];
+                        chatMessage.EventId = (int)reader["EventId"];
+                        chatMessage.Message = (string)reader["Message"];
+
+                        chatMessages.Add(chatMessage);
+                    }
+                }
+            }
+
+            return chatMessages;
         }
     }
 }

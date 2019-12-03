@@ -9,6 +9,11 @@ namespace EventPlanner
         public int Id;
         public string Email;
         public string PasswordHash;
-        List<string> Roles = new List<string>();
+        public List<string> Roles = new List<string>();
+
+        public bool HasRole(string role)
+        {
+            return Roles.Contains(role);
+        }
     }
 }

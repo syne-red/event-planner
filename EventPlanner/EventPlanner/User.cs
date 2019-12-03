@@ -8,7 +8,6 @@ namespace EventPlanner
     {
         public int Id;
         public string Email;
-        public string PasswordHash;
         public List<string> Roles = new List<string>();
 
         public bool HasRole(string role)

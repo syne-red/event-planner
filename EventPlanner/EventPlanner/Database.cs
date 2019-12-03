@@ -6,28 +6,31 @@ using System.Text;
 
 namespace EventPlanner
 {
-    class Database
+    class Database : IDisposable // IDisposable allows to put Database class inside a: using (...) {} statement
     {
-        private string connectionString;
-        private SqlConnection con;
+        private readonly string _connectionString;
+        private readonly SqlConnection _connection;
 
         public Database()
         {
             // read the connection string from a file named db.txt
-            connectionString = File.ReadAllText("db.txt");
+            _connectionString = File.ReadAllText("db.txt");
 
-            con = new SqlConnection(connectionString);
-            con.Open();
+            // create and open a connection to database
+            _connection = new SqlConnection(_connectionString);
+            _connection.Open();
         }
 
-        public void Close()
+        // Must be called when this class is no longer needed to close SQL connection
+        public void Dispose()
         {
-            con.Close();
+            // close the database connection
+            _connection.Dispose();
         }
 
         public User AddUser(string email, string passwordHash)
         {
-            using (SqlCommand cmd = con.CreateCommand())
+            using (SqlCommand cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "INSERT INTO [User] " +
                     "([Email], [PasswordHash]) " +
@@ -45,7 +48,7 @@ namespace EventPlanner
         public User GetUserById(int Id)
         {
             User user = null;
-            using (SqlCommand cmd = con.CreateCommand())
+            using (SqlCommand cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM [user] WHERE id = @id";
                 cmd.Parameters.AddWithValue("id", Id);
@@ -58,9 +61,6 @@ namespace EventPlanner
 
                         user.Id = (int)reader["Id"];
                         user.Email = (string)reader["Email"];
-                        user.PasswordHash = (string)reader["PasswordHash"];
-                        
-                        
                     }
                 }
             }
@@ -76,7 +76,7 @@ namespace EventPlanner
         public User GetUserByEmail(string email)
         {
             User user = null;
-            using (SqlCommand cmd = con.CreateCommand())
+            using (SqlCommand cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM [user] WHERE email = @email";
                 cmd.Parameters.AddWithValue("email", email);
@@ -89,7 +89,6 @@ namespace EventPlanner
 
                         user.Id = (int)reader["Id"];
                         user.Email = (string)reader["Email"];
-                        user.PasswordHash = (string)reader["PasswordHash"];
                     }
                 }
             }
@@ -102,18 +101,18 @@ namespace EventPlanner
             return user;
         }
 
-        public List<string> GetUserRoles (int userId)
+        public List<string> GetUserRoles(int userId)
         {
             List<string> roles = new List<string>();
-            using (SqlCommand cmd = con.CreateCommand())
+
+            using (SqlCommand cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "SELECT * FROM[UserRole] JOIN[Role] ON " +
-                    "[Role].Id = [UserRole].RoleId WHERE [UserRole].UserId = @id";
-                cmd.Parameters.AddWithValue("id", userId);
+                cmd.CommandText = "SELECT * FROM [UserRole] JOIN [Role] ON [Role].[Id] = [UserRole].[RoleId] WHERE [UserRole].[UserId] = @userId";
+                cmd.Parameters.AddWithValue("userId", userId);
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    if (reader.Read())
+                    while (reader.Read())
                     {
                         roles.Add((string)reader["Role"]);
                     }
@@ -123,11 +122,11 @@ namespace EventPlanner
             return roles;
         }
 
-        public User Login (string email, string passwordHash)
+        public User Login(string email, string passwordHash)
         {
             User user = null;
 
-            using (SqlCommand cmd = con.CreateCommand())
+            using (SqlCommand cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM [user] WHERE Email = @email AND PasswordHash = @passwordHash";
                 cmd.Parameters.AddWithValue("email", email);
@@ -140,7 +139,6 @@ namespace EventPlanner
                         user = new User();
                         user.Id = (int)reader["Id"];
                         user.Email = (string)reader["Email"];
-                        user.PasswordHash = (string)reader["PasswordHash"];
                     }
                 }
             }
@@ -155,7 +153,7 @@ namespace EventPlanner
 
         public void AddEvent(int creatorId, string name, string description, int maxParticipant, DateTime date, string location)
         {
-            using (SqlCommand cmd = con.CreateCommand())
+            using (SqlCommand cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "INSERT INTO [Event] " +
                     "([CreatorId], [Name], [Description], [MaxParticipant], [Date], [Location]) " + 
@@ -171,14 +169,14 @@ namespace EventPlanner
             }
         }
 
-        public Event GetEvent(int Id)
+        public Event GetEvent(int id)
         {
             Event ev = null;
 
-            using (SqlCommand cmd = con.CreateCommand())
+            using (SqlCommand cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM [Event] WHERE [Id] = @id";
-                cmd.Parameters.AddWithValue("id", Id);
+                cmd.Parameters.AddWithValue("id", id);
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -198,7 +196,7 @@ namespace EventPlanner
 
             if (ev != null)
             {
-                ev.Participant.AddRange(GetEventParticipants(ev.Id));
+                ev.Participants.AddRange(GetEventParticipants(ev.Id));
                 ev.ChatMessages.AddRange(GetEventChatMessages(ev.Id));
             }
 
@@ -209,7 +207,7 @@ namespace EventPlanner
         {
             List<Event> events = new List<Event>();
 
-            using (SqlCommand cmd = con.CreateCommand())
+            using (SqlCommand cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM [Event]";
 
@@ -233,7 +231,7 @@ namespace EventPlanner
 
             foreach (Event ev in events)
             {
-                ev.Participant.AddRange(GetEventParticipants(ev.Id));
+                ev.Participants.AddRange(GetEventParticipants(ev.Id));
             }
             
             foreach (Event ev in events)
@@ -248,7 +246,7 @@ namespace EventPlanner
         {
             List<int> userIds = new List<int>();
 
-            using (SqlCommand cmd = con.CreateCommand()) // Short variable for the sql command
+            using (SqlCommand cmd = _connection.CreateCommand()) // Short variable for the sql command
             {
                 cmd.CommandText = "SELECT * FROM [Participant] WHERE [EventId] = @eventId"; // Ask an sql question to the database
                 cmd.Parameters.AddWithValue("eventId", eventId);
@@ -281,7 +279,7 @@ namespace EventPlanner
         {
             List<ChatMessage> chatMessages = new List<ChatMessage>();
 
-            using (SqlCommand cmd = con.CreateCommand()) // Short variable for the sql command
+            using (SqlCommand cmd = _connection.CreateCommand()) // Short variable for the sql command
             {
                 cmd.CommandText = "SELECT * FROM [ChatMessage] WHERE[EventId] = @id"; // Ask an sql question to the database
                 cmd.Parameters.AddWithValue("id", eventId);
@@ -303,6 +301,24 @@ namespace EventPlanner
             }
 
             return chatMessages;
+        }
+
+        public void AddEventParticipant(int userId, int eventId)
+        {
+            // please write me, i feel empty, help... send help...
+            throw new NotImplementedException();
+        }
+
+        public void AddChatMessage(int userId, int eventId, string message)
+        {
+            // please write me, i feel empty, help... send help...
+            throw new NotImplementedException();
+        }
+
+        public bool DeleteChatMessage(int messageId)
+        {
+            // please write me, i feel empty, help... send help...
+            throw new NotImplementedException();
         }
     }
 }

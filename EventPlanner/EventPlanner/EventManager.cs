@@ -5,18 +5,29 @@ using System.Text.RegularExpressions;
 
 namespace EventPlanner
 {
-    class EventManager
+    class EventManager : IDisposable // IDisposable allows to put EventManager class inside a: using (...) {} statement
     {
-        public User LoggedInUser;
+        private readonly Database _database = new Database();
+        
+        // If a user is logs in, we set this value to the logged in user
+        private User _loggedInUser = null;
 
+        // Called when the using(eventManager) { } block ends
+        public void Dispose()
+        {
+            // dispose the database connection and free up resources
+            _database.Dispose();
+        }
+
+        // Runs at the start of the program
         public void Start()
         {
-            Database database = new Database();
-            LoginMenu(database);
+            // User is not logged in here, show the login menu
+            ShowLoginMenu();
         }
 
         // Show the login menu when the program starts
-        public void LoginMenu(Database database)
+        private void ShowLoginMenu()
         {
             Console.Clear();
 
@@ -36,10 +47,10 @@ namespace EventPlanner
                 switch (input)
                 {
                     case "1":
-                        CreateUser(database);
+                        CreateUser();
                         break;
                     case "2":
-                        Login(database);
+                        Login();
                         break;
                     case "0":
                         running = false;
@@ -52,7 +63,7 @@ namespace EventPlanner
         }
 
         // Show the user menu when a user logs in
-        public void UserMenu(Database database)
+        private void ShowUserMenu()
         {
             Console.Clear();
 
@@ -74,16 +85,16 @@ namespace EventPlanner
                 switch (input)
                 {
                     case "1":
-                        ShowEvents(database);
+                        ShowEvents();
                         break;
                     case "2":
-                        JoinEvent(database);
+                        JoinEvent();
                         break;
                     case "3":
-                        ShowEventChat(database);
+                        ShowEventChat();
                         break;
                     case "4":
-                        AddChatMessage(database);
+                        AddChatMessage();
                         break;
                     case "0":
                         running = false;
@@ -96,7 +107,7 @@ namespace EventPlanner
         }
 
         // Show the admin menu when an administrator logs in
-        public void AdminMenu(Database database)
+        private void ShowAdminMenu()
         {
             Console.Clear();
 
@@ -119,19 +130,19 @@ namespace EventPlanner
                 switch (input)
                 {
                     case "1":
-                        CreateEvent(database);
+                        CreateEvent();
                         break;
                     case "2":
-                        ShowEvents(database);
+                        ShowEvents();
                         break;
                     case "3":
-                        ShowEventChat(database);
+                        ShowEventChat();
                         break;
                     case "4":
-                        AddChatMessage(database);
+                        AddChatMessage();
                         break;
                     case "5":
-                        DeleteMessage(database);
+                        DeleteMessage();
                         break;
                     case "0":
                         running = false;
@@ -144,7 +155,7 @@ namespace EventPlanner
         }
 
         // Create a user account
-        public void CreateUser(Database database)
+        private void CreateUser()
         {
             Console.Clear();
 
@@ -160,21 +171,21 @@ namespace EventPlanner
 
                 Logger.WriteLine($"You created user {email} with password: {passwordHash}");
 
-                if (database.GetUserByEmail(email) != null)
+                if (_database.GetUserByEmail(email) != null)
                 {
                     Logger.WriteLine("That email already exists");
                     continue;
                 }
 
-                LoggedInUser = database.AddUser(email, passwordHash);
+                _loggedInUser = _database.AddUser(email, passwordHash);
                 Logger.WriteLine("Log in successfull!!!!!!");
-                UserMenu(database);
+                ShowUserMenu();
                 break;
             }
         }
 
         // Handler for logging in
-        public void Login(Database database)
+        private void Login()
         {
             Console.Clear();
 
@@ -199,23 +210,23 @@ namespace EventPlanner
                 }
 
                 string passwordHash = Hasher.Hash(password);
-                User user = database.Login(email, passwordHash);
+                User user = _database.Login(email, passwordHash);
                 if (user == null)
                 {
                     Logger.WriteLine("Username or password wrong");
                     continue;
                 }
 
-                LoggedInUser = user;
+                _loggedInUser = user;
                 Logger.WriteLine($"Welcome to the matrix {user.Email}");
 
                 if (user.HasRole("admin"))
                 {
-                    AdminMenu(database);
+                    ShowAdminMenu();
                 }
                 else
                 {
-                    UserMenu(database);
+                    ShowUserMenu();
                 }
 
                 break;
@@ -223,7 +234,7 @@ namespace EventPlanner
         }
 
         // [Admin] Create an event
-        public void CreateEvent(Database database)
+        private void CreateEvent()
         {
             Console.Clear();
 
@@ -290,20 +301,19 @@ namespace EventPlanner
                     continue;
                 }
 
-                database.AddEvent(LoggedInUser.Id, name, description, maxParticipants, eventDate, location);
+                _database.AddEvent(_loggedInUser.Id, name, description, maxParticipants, eventDate, location);
                 Logger.WriteLine("--- Event added to database! ---");
                 break;
-
             }
         }
 
         // Show all events
-        public void ShowEvents(Database database)
+        private void ShowEvents()
         {
             Console.Clear();
 
             Logger.WriteLine("--------------------- Event List ---------------------");
-            foreach (Event ev in database.GetAllEvents())
+            foreach (Event ev in _database.GetAllEvents())
             {
                 Logger.WriteLine($"{ev.Id}, {ev.Name}");
             }
@@ -311,7 +321,7 @@ namespace EventPlanner
         }
 
         // Join an event
-        public void JoinEvent(Database database)
+        private void JoinEvent()
         {
             Console.Clear();
 
@@ -320,7 +330,7 @@ namespace EventPlanner
         }
 
         // Show all chat messages of an event
-        public void ShowEventChat(Database database)
+        private void ShowEventChat()
         {
             Console.Clear();
 
@@ -329,7 +339,7 @@ namespace EventPlanner
         }
 
         // Add a chat message to an event
-        public void AddChatMessage(Database database)
+        private void AddChatMessage()
         {
             Console.Clear();
 
@@ -338,19 +348,12 @@ namespace EventPlanner
         }
 
         // Delete an event chat message
-        public void DeleteMessage(Database database)
+        private void DeleteMessage()
         {
             Console.Clear();
 
             // ask for message id, check message exist
             // delete
-        }
-
-        public void ShowLoginError()
-        {
-            Console.Clear();
-
-            // do we need this??
         }
     }
 }

@@ -12,7 +12,7 @@ namespace EventPlanner
         public int MaxParticipant;
         public DateTime Date;
         public string Location;
-        public List<User> Participant = new List<User>();
+        public List<User> Participants = new List<User>();
         public List<ChatMessage> ChatMessages = new List<ChatMessage>();
     }
 }

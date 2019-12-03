@@ -8,8 +8,11 @@ namespace EventPlanner
     {
         static void Main(string[] args)
         {
-            EventManager eventManager = new EventManager();
-            eventManager.Start();
+            // using (...) {} will call eventManager.Dispose() on the ending }
+            using (EventManager eventManager = new EventManager())
+            {
+                eventManager.Start();
+            }
         }
     }
 }

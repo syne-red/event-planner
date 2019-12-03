@@ -60,6 +60,8 @@ namespace EventPlanner
 
         public void CreateUser()
         {
+            Console.Clear();
+
             Logger.Write("Enter email: ");
             string email = Logger.ReadLine();
 
@@ -73,6 +75,7 @@ namespace EventPlanner
         
         public void CreateEvent()
         {
+            Console.Clear();
 
             while (true)
             {
@@ -131,7 +134,7 @@ namespace EventPlanner
 
                 Database database = new Database();
                 database.AddEvent(1, name, description, maxParticipants, eventDate, location);
-                Logger.WriteLine("Event added to database!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                Logger.WriteLine("--- Event added to database! ---");
                 break;
 
             }
@@ -140,10 +143,13 @@ namespace EventPlanner
 
         public void ShowEvents()
         {
+            Console.Clear();
         }
 
-        public void Login(Database database) 
+        public void Login(Database database)
         {
+            Console.Clear();
+
             while (true)
             {
                 Logger.Write("Enter email: ");

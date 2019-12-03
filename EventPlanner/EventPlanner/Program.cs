@@ -9,8 +9,6 @@ namespace EventPlanner
         static void Main(string[] args)
         {
             EventManager eventManager = new EventManager();
-            string hash = Hasher.Hash("1234");
-            Logger.WriteLine(hash);
             eventManager.Start();
         }
     }

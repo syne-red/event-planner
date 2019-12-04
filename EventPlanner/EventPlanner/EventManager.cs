@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace EventPlanner
 {
@@ -35,12 +36,15 @@ namespace EventPlanner
 
             while (running)
             {
-                Logger.WriteLine("--- Welcome to The event planer! ---");
-                Logger.WriteLine("Select an option ");
-                Logger.WriteLine(" 1.Create User Account ");
-                Logger.WriteLine(" 2.Log in ");
-                Logger.WriteLine(" 0.Exit ");
-                Logger.Write("Input selection: ");
+
+                Logger.WriteLine("");
+                Logger.WriteLine(" ---------------- WELCOME TO THE EVENT PLANNER! -----------------");
+                Logger.WriteLine("");
+                Logger.WriteLine(" ----------------------------------------------------------------");
+                Logger.WriteLine("|    1. Create User Account    |    2. Log in    |    0. Exit    |");
+                Logger.WriteLine(" ----------------------------------------------------------------");
+                Logger.WriteLine("");
+                Logger.Write("Select menu number: ");
 
                 string input = Logger.ReadLine();
 
@@ -71,14 +75,14 @@ namespace EventPlanner
 
             while (running)
             {
-                Logger.WriteLine("--- Welcome to The event planer! ---");
-                Logger.WriteLine("Select an option ");
-                Logger.WriteLine(" 1.Show events ");
-                Logger.WriteLine(" 2.Join event ");
-                Logger.WriteLine(" 3.Show event chat ");
-                Logger.WriteLine(" 4.Add chat messsage ");
-                Logger.WriteLine(" 0.Logout my good sir ");
-                Logger.Write("Input selection: ");
+                Logger.WriteLine("");
+                Logger.WriteLine(" -------------------------------------------------- WELCOME USER! -----------------------------------------------------");
+                Logger.WriteLine("");
+                Logger.WriteLine(" ----------------------------------------------------------------------------------------------------------------------");
+                Logger.WriteLine("|    1. Show events    |    2. Join event    |    3. Show event chat    |    4. Add chat messsage    |    0. Logout    |");
+                Logger.WriteLine(" ----------------------------------------------------------------------------------------------------------------------");
+                Logger.WriteLine("");
+                Logger.Write("Select menu number: ");
 
                 string input = Logger.ReadLine();
 
@@ -115,15 +119,14 @@ namespace EventPlanner
 
             while (running)
             {
-                Logger.WriteLine("--- Welcome Admin ---");
-                Logger.WriteLine("Select an option ");
-                Logger.WriteLine(" 1.Create event ");
-                Logger.WriteLine(" 2.Show Events ");
-                Logger.WriteLine(" 3.Show event chat ");
-                Logger.WriteLine(" 4.Add chat message ");
-                Logger.WriteLine(" 5.DELETE MESSAGE ");
-                Logger.WriteLine(" 0.Logout sir ");
-                Logger.Write("Input selection: ");
+                Logger.WriteLine("");
+                Logger.WriteLine(" ----------------------------------------------------------------- WELCOME ADMIN! --------------------------------------------------------------------");
+                Logger.WriteLine("");
+                Logger.WriteLine(" --------------------------------------------------------------------------------------------------------------------------------------------------");
+                Logger.WriteLine("|    1. Create event    |    2. Show Events    |    3. Show event chat    |    4. Add chat messsage    |    5. DELETE MESSAGE    |    0. Logout    |");
+                Logger.WriteLine(" --------------------------------------------------------------------------------------------------------------------------------------------------");
+                Logger.WriteLine("");
+                Logger.Write("Select menu number: ");
 
                 string input = Logger.ReadLine();
 
@@ -178,7 +181,7 @@ namespace EventPlanner
                 }
 
                 _loggedInUser = _database.AddUser(email, passwordHash);
-                Logger.WriteLine("Log in successfull!!!!!!");
+                Logger.WriteLine("Log in successfull !");
                 ShowUserMenu();
                 break;
             }
@@ -302,7 +305,8 @@ namespace EventPlanner
                 }
 
                 _database.AddEvent(_loggedInUser.Id, name, description, maxParticipants, eventDate, location);
-                Logger.WriteLine("--- Event added to database! ---");
+                Logger.WriteLine("");
+                Logger.WriteLine("  - EVENT ADDED!");
                 break;
             }
         }
@@ -312,18 +316,36 @@ namespace EventPlanner
         {
             Console.Clear();
 
-            Logger.WriteLine("--------------------- Event List ---------------------");
+            Logger.WriteLine("------------- Event List ------------");
             foreach (Event ev in _database.GetAllEvents())
             {
-                Logger.WriteLine($"{ev.Id}, {ev.Name}");
+                Logger.WriteLine($"| {ev.Id}, {ev.Name}");
             }
-            Logger.WriteLine("--------------------- END ---------------------");
+            Logger.WriteLine("---------------- END ----------------");
+            Logger.WriteLine("");
         }
 
         // Join an event
         private void JoinEvent()
         {
             Console.Clear();
+
+            Logger.WriteLine("------------- Event List ------------");
+            foreach (Event ev in _database.GetAllEvents())
+            {
+                Logger.WriteLine($"| {ev.Id}, {ev.Name}");
+            }
+            Logger.WriteLine("---------------- END ----------------");
+            Logger.WriteLine("");
+            Logger.Write("Select event number to join: ");
+            string eventIdInput = Logger.ReadLine();
+
+            int eventId = Int32.Parse(eventIdInput);
+
+
+            _database.AddParticipant(_loggedInUser.Id, eventId);
+            Logger.WriteLine("");
+            Logger.WriteLine("  - EVENT JOINED!");
 
             // ask for an event id, check event exist
             // add Participant to db

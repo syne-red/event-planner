@@ -156,7 +156,7 @@ namespace EventPlanner
             using (SqlCommand cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "INSERT INTO [Event] " +
-                    "([CreatorId], [Name], [Description], [MaxParticipant], [Date], [Location]) " + 
+                    "([CreatorId], [Name], [Description], [MaxParticipant], [Date], [Location]) " +
                     "VALUES (@creatorId, @name, @description, @maxParticipant, @date, @location)";
                 cmd.Parameters.AddWithValue("creatorId", creatorId);
                 cmd.Parameters.AddWithValue("name", name);
@@ -164,6 +164,19 @@ namespace EventPlanner
                 cmd.Parameters.AddWithValue("maxParticipant", maxParticipant);
                 cmd.Parameters.AddWithValue("date", date);
                 cmd.Parameters.AddWithValue("location", location);
+
+                cmd.ExecuteNonQuery();
+            }
+        }
+        public void AddParticipant(int userId, int eventId)
+        {
+            using (SqlCommand cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "INSERT INTO [Participant] " +
+                    "([UserId], [EventId]) " +
+                    "VALUES (@userId, @eventId)";
+                cmd.Parameters.AddWithValue("userId", userId);
+                cmd.Parameters.AddWithValue("eventId", eventId);
 
                 cmd.ExecuteNonQuery();
             }

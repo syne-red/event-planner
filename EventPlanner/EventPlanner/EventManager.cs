@@ -337,18 +337,29 @@ namespace EventPlanner
             }
             Logger.WriteLine("---------------- END ----------------");
             Logger.WriteLine("");
-            Logger.Write("Select event number to join: ");
-            string eventIdInput = Logger.ReadLine();
 
-            int eventId = Int32.Parse(eventIdInput);
+            while (true)
+            {
+
+                Logger.Write("Select event number to join: ");
+                string eventIdInput = Logger.ReadLine();
+
+                int eventId = Int32.Parse(eventIdInput);
 
 
-            _database.AddParticipant(_loggedInUser.Id, eventId);
-            Logger.WriteLine("");
-            Logger.WriteLine("  - EVENT JOINED!");
+                if (_database.GetEvent(eventId) == null)
+                {
+                    Console.WriteLine("Select a valid event id");
+                }
+                else
+                {
+                    _database.AddParticipant(_loggedInUser.Id, eventId);
+                    Logger.WriteLine("");
+                    Logger.WriteLine("  - EVENT JOINED!");
+                    break;
+                }
+            }
 
-            // ask for an event id, check event exist
-            // add Participant to db
         }
 
         // Show all chat messages of an event

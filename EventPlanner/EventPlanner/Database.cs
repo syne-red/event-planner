@@ -168,7 +168,7 @@ namespace EventPlanner
                 cmd.ExecuteNonQuery();
             }
         }
-        public void AddParticipant(int userId, int eventId)
+        public void AddEventParticipant(int userId, int eventId)
         {
             using (SqlCommand cmd = _connection.CreateCommand())
             {
@@ -314,12 +314,6 @@ namespace EventPlanner
             }
 
             return chatMessages;
-        }
-
-        public void AddEventParticipant(int userId, int eventId)
-        {
-            // please write me, i feel empty, help... send help...
-            throw new NotImplementedException();
         }
 
         public void AddChatMessage(int userId, int eventId, string message)

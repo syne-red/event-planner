@@ -349,11 +349,12 @@ namespace EventPlanner
 
                 if (_database.GetEvent(eventId) == null)
                 {
-                    Console.WriteLine("Select a valid event id");
+                    Logger.WriteLine("");
+                    Logger.WriteLine("  - SELECT A VALID EVENT ID!");
                 }
                 else
                 {
-                    _database.AddParticipant(_loggedInUser.Id, eventId);
+                    _database.AddEventParticipant(_loggedInUser.Id, eventId);
                     Logger.WriteLine("");
                     Logger.WriteLine("  - EVENT JOINED!");
                     break;
@@ -367,6 +368,33 @@ namespace EventPlanner
         {
             Console.Clear();
 
+            Logger.WriteLine("------------- Event List ------------");
+            foreach (Event ev in _database.GetAllEvents())
+            {
+                Logger.WriteLine($"| {ev.Id}, {ev.Name}");
+            }
+            Logger.WriteLine("---------------- END ----------------");
+            Logger.WriteLine("");
+
+            while (true)
+            {
+
+                Logger.Write("Select event number to join: ");
+                string eventIdInput = Logger.ReadLine();
+
+                int eventId = Int32.Parse(eventIdInput);
+
+
+                if (_database.GetEvent(eventId) == null)
+                {
+                    Logger.WriteLine("");
+                    Logger.WriteLine("  - SELECT A VALID EVENT ID!");
+                }
+                else
+                {
+                    break;
+                }
+            }
             // ask for an event id, check event exist
             // list event chat messages
         }

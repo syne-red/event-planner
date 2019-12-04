@@ -318,14 +318,28 @@ namespace EventPlanner
 
         public void AddChatMessage(int userId, int eventId, string message)
         {
-            // please write me, i feel empty, help... send help...
-            throw new NotImplementedException();
+            using (SqlCommand cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "INSERT INTO [ChatMessage] ([EventId], [UserId], [Date], [Message]) VALUES (@eventId, @userId, @date, @message)";
+                cmd.Parameters.AddWithValue("eventId", eventId);
+                cmd.Parameters.AddWithValue("userId", userId);
+                cmd.Parameters.AddWithValue("date", DateTime.Now);
+                cmd.Parameters.AddWithValue("message", message);
+
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public bool DeleteChatMessage(int messageId)
         {
-            // please write me, i feel empty, help... send help...
-            throw new NotImplementedException();
+            using (SqlCommand cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "DELETE FROM [ChatMessage] WHERE [Id] = @id";
+                cmd.Parameters.AddWithValue("id", messageId);
+
+                return cmd.ExecuteNonQuery() != 0;
+                
+            }
         }
     }
 }

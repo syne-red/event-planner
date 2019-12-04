@@ -73,11 +73,12 @@ namespace EventPlanner
 
             bool running = true;
 
+            Logger.WriteLine("");
+            Logger.WriteLine(" -------------------------------------------------- WELCOME USER! -----------------------------------------------------");
+            Logger.WriteLine("");
+
             while (running)
             {
-                Logger.WriteLine("");
-                Logger.WriteLine(" -------------------------------------------------- WELCOME USER! -----------------------------------------------------");
-                Logger.WriteLine("");
                 Logger.WriteLine(" ----------------------------------------------------------------------------------------------------------------------");
                 Logger.WriteLine("|    1. Show events    |    2. Join event    |    3. Show event chat    |    4. Add chat messsage    |    0. Logout    |");
                 Logger.WriteLine(" ----------------------------------------------------------------------------------------------------------------------");
@@ -117,11 +118,12 @@ namespace EventPlanner
 
             bool running = true;
 
+            Logger.WriteLine("");
+            Logger.WriteLine(" ----------------------------------------------------------------- WELCOME ADMIN! --------------------------------------------------------------------");
+            Logger.WriteLine("");
+
             while (running)
             {
-                Logger.WriteLine("");
-                Logger.WriteLine(" ----------------------------------------------------------------- WELCOME ADMIN! --------------------------------------------------------------------");
-                Logger.WriteLine("");
                 Logger.WriteLine(" --------------------------------------------------------------------------------------------------------------------------------------------------");
                 Logger.WriteLine("|    1. Create event    |    2. Show Events    |    3. Show event chat    |    4. Add chat messsage    |    5. DELETE MESSAGE    |    0. Logout    |");
                 Logger.WriteLine(" --------------------------------------------------------------------------------------------------------------------------------------------------");
@@ -172,7 +174,7 @@ namespace EventPlanner
 
                 string passwordHash = Hasher.Hash(password);
 
-                Logger.WriteLine($"You created user {email} with password: {passwordHash}");
+                Logger.WriteLine($"You created user {email}");
 
                 if (_database.GetUserByEmail(email) != null)
                 {
@@ -379,7 +381,7 @@ namespace EventPlanner
             while (true)
             {
 
-                Logger.Write("Select event number to join: ");
+                Logger.Write("Select event number: ");
                 string eventIdInput = Logger.ReadLine();
 
                 int eventId = Int32.Parse(eventIdInput);
@@ -389,11 +391,17 @@ namespace EventPlanner
                 {
                     Logger.WriteLine("");
                     Logger.WriteLine("  - SELECT A VALID EVENT ID!");
+                    continue;
                 }
-                else
+
+                Logger.WriteLine("");
+
+                // Call function
+                foreach (ChatMessage chatMessage in _database.GetEventChatMessages(eventId))
                 {
-                    break;
+                    Logger.WriteLine($"{chatMessage.Id}, {chatMessage.Date}, {chatMessage.Message}");
                 }
+                break;
             }
             // ask for an event id, check event exist
             // list event chat messages
@@ -404,6 +412,44 @@ namespace EventPlanner
         {
             Console.Clear();
 
+            Logger.WriteLine("------------- Event List ------------");
+            foreach (Event ev in _database.GetAllEvents())
+            {
+                Logger.WriteLine($"| {ev.Id}, {ev.Name}");
+            }
+            Logger.WriteLine("---------------- END ----------------");
+            Logger.WriteLine("");
+
+            while (true)
+            {
+                Logger.Write("Select event number: ");
+                string eventIdInput = Logger.ReadLine();
+
+                int eventId = Int32.Parse(eventIdInput);
+
+
+                if (_database.GetEvent(eventId) == null)
+                {
+                    Logger.WriteLine("");
+                    Logger.WriteLine("  - SELECT A VALID EVENT ID!");
+
+                    continue;
+                }
+
+                Logger.WriteLine("");
+                Logger.Write("Enter chat message: ");
+                string message = Logger.ReadLine();
+
+                if (!Validation.IsValidChatMessage(message))
+                {
+                    Logger.WriteLine("Invalid chat message!");
+                    continue;
+                }
+
+                _database.AddChatMessage(_loggedInUser.Id, eventId, message);
+
+                break;
+            }
             // ask for an event id, check event exist
             // add message to db
         }
@@ -413,8 +459,47 @@ namespace EventPlanner
         {
             Console.Clear();
 
-            // ask for message id, check message exist
-            // delete
+            Logger.WriteLine("------------- Event List ------------");
+            foreach (Event ev in _database.GetAllEvents())
+            {
+                Logger.WriteLine($"| {ev.Id}, {ev.Name}");
+            }
+            Logger.WriteLine("---------------- END ----------------");
+            Logger.WriteLine("");
+
+            while (true)
+            {
+                Logger.Write("Enter event id: ");
+                string eventIdInput = Logger.ReadLine();
+                int eventId = int.Parse(eventIdInput);
+
+                Event ev = _database.GetEvent(eventId);
+
+                if (ev == null)
+                {
+                    Logger.WriteLine("Event not found");
+                    continue;
+                }
+
+                foreach(ChatMessage chatMessage in ev.ChatMessages)
+                {
+                    Logger.WriteLine($"{chatMessage.Id}, {chatMessage.Date}, {chatMessage.Message}");
+                }
+
+                Logger.Write("Enter chat message id: ");
+                string messageIdInput = Logger.ReadLine();
+                int messageId = int.Parse(messageIdInput);
+
+                if (!_database.DeleteChatMessage(messageId))
+                {
+                    Logger.WriteLine("Chat message not found");
+                    continue;
+                }
+
+                Logger.WriteLine("Chat message deleted!");
+                break;
+            }
+
         }
     }
 }

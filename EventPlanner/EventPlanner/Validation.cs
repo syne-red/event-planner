@@ -47,5 +47,12 @@ namespace EventPlanner
 
             return locationRegex.IsMatch(location);
         }
+
+        public static bool IsValidChatMessage(string message)
+        {
+            Regex messageRegex = new Regex("^.{1,255}$");
+
+            return messageRegex.IsMatch(message);
+        }
     }
 }

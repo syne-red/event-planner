@@ -27,7 +27,11 @@ namespace EventPlanner
             // close the database connection
             _connection.Dispose();
         }
-
+        /// <summary>
+        /// Opens a sql connection and inserts a user to the user table
+        /// </summary>
+        /// <param name="email">The users inputed email</param>
+        /// <param name="passwordHash">The users inputed password</param>
         public User AddUser(string email, string passwordHash)
         {
             using (SqlCommand cmd = _connection.CreateCommand())
@@ -44,7 +48,10 @@ namespace EventPlanner
             return GetUserByEmail(email);
         }
 
-
+        /// <summary>
+        /// Gets a user from the database on the user id
+        /// </summary>
+        /// <param name="Id">UserId</param>
         public User GetUserById(int Id)
         {
             User user = null;
@@ -73,6 +80,10 @@ namespace EventPlanner
             return user;
         }
 
+        /// <summary>
+        /// Selects a user from the user table on the user email
+        /// </summary>
+        /// <param name="email">The users email</param>
         public User GetUserByEmail(string email)
         {
             User user = null;
@@ -92,7 +103,7 @@ namespace EventPlanner
                     }
                 }
             }
-
+            // If the user is logged in, set role
             if (user != null)
             {
                 user.Roles = GetUserRoles(user.Id);
@@ -100,13 +111,18 @@ namespace EventPlanner
 
             return user;
         }
-
+        /// <summary>
+        /// Select all roles from the database
+        /// </summary>
+        /// <param name="userId">The user id</param>
+        /// <returns></returns>
         public List<string> GetUserRoles(int userId)
         {
             List<string> roles = new List<string>();
 
             using (SqlCommand cmd = _connection.CreateCommand())
             {
+                // Join the tables UserRole with Role
                 cmd.CommandText = "SELECT * FROM [UserRole] JOIN [Role] ON [Role].[Id] = [UserRole].[RoleId] WHERE [UserRole].[UserId] = @userId";
                 cmd.Parameters.AddWithValue("userId", userId);
 
@@ -122,6 +138,11 @@ namespace EventPlanner
             return roles;
         }
 
+        /// <summary>
+        /// Login a user check email and password from database
+        /// </summary>
+        /// <param name="email">The users email</param>
+        /// <param name="passwordHash">The users password</param>
         public User Login(string email, string passwordHash)
         {
             User user = null;
@@ -151,6 +172,15 @@ namespace EventPlanner
             return user;
         }
 
+        /// <summary>
+        /// Insert an event to the database
+        /// </summary>
+        /// <param name="creatorId">The creator of the event</param>
+        /// <param name="name">Name of event</param>
+        /// <param name="description">The event description</param>
+        /// <param name="maxParticipant">Number of max participants that can attend the event</param>
+        /// <param name="date">The date when the event is happening</param>
+        /// <param name="location">The location of the event</param>
         public void AddEvent(int creatorId, string name, string description, int maxParticipant, DateTime date, string location)
         {
             using (SqlCommand cmd = _connection.CreateCommand())
@@ -168,6 +198,12 @@ namespace EventPlanner
                 cmd.ExecuteNonQuery();
             }
         }
+
+        /// <summary>
+        /// Insert a participant to the event
+        /// </summary>
+        /// <param name="userId">The participant</param>
+        /// <param name="eventId">The event the participant is added to</param>
         public void AddEventParticipant(int userId, int eventId)
         {
             using (SqlCommand cmd = _connection.CreateCommand())
@@ -182,6 +218,10 @@ namespace EventPlanner
             }
         }
 
+        /// <summary>
+        /// Get an event from the database
+        /// </summary>
+        /// <param name="id">The id of the event</param>
         public Event GetEvent(int id)
         {
             Event ev = null;

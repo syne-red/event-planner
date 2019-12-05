@@ -9,7 +9,7 @@ namespace EventPlanner
     class EventManager : IDisposable // IDisposable allows to put EventManager class inside a: using (...) {} statement
     {
         private readonly Database _database = new Database();
-        
+
         // If a user is logs in, we set this value to the logged in user
         private User _loggedInUser = null;
 
@@ -321,8 +321,30 @@ namespace EventPlanner
             Logger.WriteLine("------------- Event List ------------");
             foreach (Event ev in _database.GetAllEvents())
             {
-                Logger.WriteLine($"| {ev.Id}, {ev.Name}");
+                Logger.WriteLine($"#{ev.Id} - {ev.Name}");
+                Logger.WriteLine($"Description: {ev.Description}");
+                Logger.WriteLine($"Date: {ev.Date.ToString("yyyy-MM-dd")}");
+                Logger.WriteLine($"Max participants: {ev.MaxParticipant}");
+
+                if (ev.Participants.Count != 0)
+                {
+                    Logger.Write($"Participants({ev.Participants.Count}): ");
+
+                    foreach (User user in ev.Participants)
+                    {
+                        Logger.Write($"{user.Email} ");
+                    }
+
+                    Logger.WriteLine("");
+                }
+                else
+                {
+                    Logger.WriteLine("No participants");
+                }
+
+                Logger.WriteLine("");
             }
+
             Logger.WriteLine("---------------- END ----------------");
             Logger.WriteLine("");
         }
@@ -342,13 +364,10 @@ namespace EventPlanner
 
             while (true)
             {
-
                 Logger.Write("Select event number to join: ");
                 string eventIdInput = Logger.ReadLine();
 
-                int eventId = Int32.Parse(eventIdInput);
-
-
+                int eventId = int.Parse(eventIdInput);
                 if (_database.GetEvent(eventId) == null)
                 {
                     Logger.WriteLine("");
@@ -481,7 +500,7 @@ namespace EventPlanner
                     continue;
                 }
 
-                foreach(ChatMessage chatMessage in ev.ChatMessages)
+                foreach (ChatMessage chatMessage in ev.ChatMessages)
                 {
                     Logger.WriteLine($"{chatMessage.Id}, {chatMessage.Date}, {chatMessage.Message}");
                 }

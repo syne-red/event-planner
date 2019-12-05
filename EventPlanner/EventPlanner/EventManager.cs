@@ -57,7 +57,7 @@ namespace EventPlanner
                         Login();
                         break;
                     case "0":
-                        running = false;
+                        running = false; // exit out of the program
                         break;
                     default:
                         Logger.WriteLine("No input chosen");
@@ -102,7 +102,7 @@ namespace EventPlanner
                         AddChatMessage();
                         break;
                     case "0":
-                        running = false;
+                        running = false; // logout of the user menu and go back to login
                         break;
                     default:
                         Logger.WriteLine("No input chosen");
@@ -150,7 +150,7 @@ namespace EventPlanner
                         DeleteMessage();
                         break;
                     case "0":
-                        running = false;
+                        running = false; // logout of the user menu and go back to login
                         break;
                     default:
                         Logger.WriteLine("No input chosen");

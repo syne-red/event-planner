@@ -32,6 +32,7 @@ namespace EventPlanner
         {
             Console.Clear();
 
+            // When user chooses Exit this running variable is set to false
             bool running = true;
 
             while (running)
@@ -60,7 +61,7 @@ namespace EventPlanner
                         running = false; // exit out of the program
                         break;
                     default:
-                        Logger.WriteLine("No input chosen");
+                        Logger.WriteLine("No valid input chosen");
                         break;
                 }
             }
@@ -368,10 +369,16 @@ namespace EventPlanner
                 string eventIdInput = Logger.ReadLine();
 
                 int eventId = int.Parse(eventIdInput);
-                if (_database.GetEvent(eventId) == null)
+                Event ev = _database.GetEvent(eventId);
+                if (ev == null)
                 {
                     Logger.WriteLine("");
                     Logger.WriteLine("  - SELECT A VALID EVENT ID!");
+                }
+                else if (ev.Participants.Count >= ev.MaxParticipant)
+                {
+                    Logger.WriteLine("");
+                    Logger.WriteLine("Cannot join because maximum participants reached");
                 }
                 else
                 {

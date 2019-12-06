@@ -256,6 +256,10 @@ namespace EventPlanner
             return ev;
         }
 
+        /// <summary>
+        /// GEt all the events
+        /// </summary>
+        /// <returns>returns the events</returns>
         public List<Event> GetAllEvents()
         {
             List<Event> events = new List<Event>();
@@ -295,6 +299,11 @@ namespace EventPlanner
             return events;
         }
 
+        /// <summary>
+        /// Get the participant users of an event
+        /// </summary>
+        /// <param name="eventId">id of the event</param>
+        /// <returns> Returns the participant users</returns>
         public List<User> GetEventParticipants(int eventId)
         {
             List<int> userIds = new List<int>();
@@ -328,6 +337,11 @@ namespace EventPlanner
             return users;
         }
 
+        /// <summary>
+        /// Get all the messages from specific event
+        /// </summary>
+        /// <param name="eventId">id of the event</param>
+        /// <returns></returns>
         public List<ChatMessage> GetEventChatMessages(int eventId)
         {
             List<ChatMessage> chatMessages = new List<ChatMessage>();
@@ -356,6 +370,12 @@ namespace EventPlanner
             return chatMessages;
         }
 
+        /// <summary>
+        /// Add messages to the database
+        /// </summary>
+        /// <param name="userId">id of the user</param>
+        /// <param name="eventId">id of the event</param>
+        /// <param name="message">message string</param>
         public void AddChatMessage(int userId, int eventId, string message)
         {
             using (SqlCommand cmd = _connection.CreateCommand())
@@ -370,6 +390,11 @@ namespace EventPlanner
             }
         }
 
+        /// <summary>
+        /// Delete specific chat
+        /// </summary>
+        /// <param name="messageId">id of the message</param>
+        /// <returns>REturn execute if it's not null</returns>
         public bool DeleteChatMessage(int messageId)
         {
             using (SqlCommand cmd = _connection.CreateCommand())

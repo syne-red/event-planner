@@ -7,8 +7,8 @@ namespace EventPlanner
 {
     class Validation
     {
-        //^(\w| ){3,255}$
-
+        
+        // Set a regex format for the input
         public static bool IsValidEmail(string email)
         {
 

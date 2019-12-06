@@ -215,7 +215,7 @@ namespace EventPlanner
                     continue;
                 }
 
-                string passwordHash = Hasher.Hash(password);
+                string passwordHash = Hasher.Hash(password); 
                 User user = _database.Login(email, passwordHash);
                 if (user == null)
                 {

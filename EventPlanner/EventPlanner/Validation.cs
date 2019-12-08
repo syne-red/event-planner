@@ -17,6 +17,13 @@ namespace EventPlanner
             return emailRegex.IsMatch(email);
         }
 
+        
+        public static bool IsValidPassword(string password)
+        {
+            // The password must be at least 4 characters to 20 characters
+            return password.Length >= 4 && password.Length <= 20;
+        }
+
         public static bool IsValidEventName(string name)
         {
             Regex nameRegex = new Regex("^(\\w| ){3,255}$");

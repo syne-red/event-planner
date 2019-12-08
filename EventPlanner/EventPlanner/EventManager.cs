@@ -173,18 +173,33 @@ namespace EventPlanner
                 Logger.Write("Enter password: ");
                 string password = Logger.ReadPassword();
 
+                if (!Validation.IsValidEmail(email))
+                {
+                    Logger.WriteLine("The email does not appear to be valid");
+                    continue;
+                }
+
+                if (!Validation.IsValidPassword(password))
+                {
+
+                    Logger.WriteLine("The password must be at least 4 characters and max 20 characters");
+                    continue;
+                }
+
                 string passwordHash = Hasher.Hash(password);
 
-                Logger.WriteLine($"You created user {email}");
-
+                // check if email already exists
                 if (_database.GetUserByEmail(email) != null)
                 {
                     Logger.WriteLine("That email already exists");
                     continue;
                 }
 
+                // automatically log in user and show user menu
                 _loggedInUser = _database.AddUser(email, passwordHash);
-                Logger.WriteLine("Log in successfull !");
+
+                Logger.WriteLine($"Account created: {email}");
+                Logger.WriteLine("Log in successfull!");
                 ShowUserMenu();
                 break;
             }
@@ -215,7 +230,7 @@ namespace EventPlanner
                     continue;
                 }
 
-                string passwordHash = Hasher.Hash(password); 
+                string passwordHash = Hasher.Hash(password);
                 User user = _database.Login(email, passwordHash);
                 if (user == null)
                 {
@@ -406,12 +421,15 @@ namespace EventPlanner
 
             while (true)
             {
-
                 Logger.Write("Select event number: ");
                 string eventIdInput = Logger.ReadLine();
 
-                int eventId = Int32.Parse(eventIdInput);
-
+                int eventId;
+                if (!int.TryParse(eventIdInput, out eventId))
+                {
+                    Logger.WriteLine("Not a valid number input");
+                    continue;
+                }
 
                 if (_database.GetEvent(eventId) == null)
                 {
@@ -451,9 +469,7 @@ namespace EventPlanner
                 Logger.Write("Select event number: ");
                 string eventIdInput = Logger.ReadLine();
 
-                int eventId = Int32.Parse(eventIdInput);
-
-
+                int eventId = int.Parse(eventIdInput);
                 if (_database.GetEvent(eventId) == null)
                 {
                     Logger.WriteLine("");
